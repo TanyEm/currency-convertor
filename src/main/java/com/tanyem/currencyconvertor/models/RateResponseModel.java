@@ -1,19 +1,19 @@
 package com.tanyem.currencyconvertor.models;
 
 public class RateResponseModel {
-    private double result;
+    private long result;
     private long timestamp;
 
-    public RateResponseModel(double result, long timestamp) {
+    public RateResponseModel(long result, long timestamp) {
         this.result = result;
         this.timestamp = timestamp;
     }
 
-    public double getResult() {
+    public long getResult() {
         return result;
     }
 
-    public void setResult(double result) {
+    public void setResult(long result) {
         this.result = result;
     }
 
