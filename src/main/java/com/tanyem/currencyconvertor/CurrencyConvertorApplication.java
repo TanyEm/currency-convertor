@@ -9,5 +9,4 @@ public class CurrencyConvertorApplication {
     public static void main(String[] args) {
         SpringApplication.run(CurrencyConvertorApplication.class, args);
     }
-
 }
