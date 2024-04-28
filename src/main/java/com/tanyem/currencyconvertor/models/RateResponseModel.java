@@ -1,5 +1,10 @@
 package com.tanyem.currencyconvertor.models;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class RateResponseModel {
     private long result;
     private long timestamp;
@@ -9,19 +14,4 @@ public class RateResponseModel {
         this.timestamp = timestamp;
     }
 
-    public long getResult() {
-        return result;
-    }
-
-    public void setResult(long result) {
-        this.result = result;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
 }
