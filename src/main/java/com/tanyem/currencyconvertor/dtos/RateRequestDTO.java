@@ -20,7 +20,11 @@ public class RateRequestDTO {
     @Size(min = 3, max = 3, message = "Target currency must be 3 characters")
     public String target_currency;
 
-    @Positive(message = "Monetary value must be greater than 0")
-    public long monetary_value;
+    @Pattern(
+            regexp = "^[1-9][0-9]+$",
+            message = "Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"
+    )
+    @Size(max = 18, message = "Monetary value must be less or equal than 18 digits")
+    public String monetary_value;
 
 }
