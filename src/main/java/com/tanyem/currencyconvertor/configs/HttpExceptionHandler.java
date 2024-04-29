@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +17,23 @@ import java.util.Map;
 public class HttpExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, List<String>>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .toList();
+    public ResponseEntity<Map<String, Map<String, List<String>>>> handleValidationErrors(MethodArgumentNotValidException ex) {
+        Map<String, List<String>> errorsMap = new HashMap<>();
 
-        Map<String, List<String>> errorsResponse = new HashMap<>();
-        errorsResponse.put("errors", errors);
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            if (!errorsMap.containsKey(fieldName)) {
+                errorsMap.put(fieldName, new ArrayList<>());
+            }
+            errorsMap.get(fieldName).add(errorMessage);
+        });
+
+        // sort the error lists alphabetically for consistency
+        errorsMap.forEach((key, value) -> value.sort(String::compareTo));
+
+        Map<String, Map<String, List<String>>> errorsResponse = new HashMap<>();
+        errorsResponse.put("errors", errorsMap);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
