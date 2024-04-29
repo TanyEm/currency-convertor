@@ -34,11 +34,12 @@ class CurrencyConvertorControllerTest {
                         .param("source_currency", "USD")
                         .param("target_currency", "EUR")
                         .param("monetary_value", "100")
+                        .header("Accept-Language", "en-US")
                 )
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("100"));
+                .andExpect(jsonPath("$.result").value("$100.00"));
     }
 
     @Test
