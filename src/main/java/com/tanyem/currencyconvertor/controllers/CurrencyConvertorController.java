@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.text.NumberFormat;
@@ -18,9 +19,11 @@ public class CurrencyConvertorController {
 
     private static final Logger logger = LoggerFactory.getLogger(CurrencyConvertorController.class);
     private final LocaleResolver localeResolver = new AcceptHeaderLocaleResolver();
+    private final View error;
 
-    public CurrencyConvertorController() {
+    public CurrencyConvertorController(View error) {
         logger.info("CurrencyConvertorController created!");
+        this.error = error;
     }
 
     @GetMapping(path = "/", produces = "application/json")

@@ -1,6 +1,7 @@
 package com.tanyem.currencyconvertor.dtos;
 
 import com.tanyem.currencyconvertor.validators.CurrencyCode;
+import com.tanyem.currencyconvertor.validators.CurrencyVariety;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
+@CurrencyVariety
 public class RateRequestDTO {
 
     @NotBlank(message = "Source currency cannot be empty")
