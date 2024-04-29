@@ -1,6 +1,5 @@
 package com.tanyem.currencyconvertor.dtos;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

@@ -11,6 +11,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -39,10 +40,9 @@ public class CurrencyConvertorController {
                 rateRequestDTO.target_currency,
                 rateRequestDTO.monetary_value);
 
-        Long monetaryValue = Long.parseLong(rateRequestDTO.monetary_value);
         Locale locale = localeResolver.resolveLocale(request);
         NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
 
-        return new RateResponseDTO(nf.format(monetaryValue), System.currentTimeMillis());
+        return new RateResponseDTO(nf.format(new BigDecimal(rateRequestDTO.monetary_value)), System.currentTimeMillis());
     }
 }

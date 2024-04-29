@@ -2,6 +2,7 @@ package com.tanyem.currencyconvertor.dtos;
 
 import com.tanyem.currencyconvertor.validators.CurrencyCode;
 import com.tanyem.currencyconvertor.validators.CurrencyVariety;
+import com.tanyem.currencyconvertor.validators.ValidBigDecimalValueString;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,11 +28,7 @@ public class RateRequestDTO {
 
     @NotBlank(message = "Monetary value cannot be empty")
     @NotNull(message = "Monetary value is required")
-    @Pattern(
-            regexp = "^[1-9][0-9]+$",
-            message = "Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"
-    )
-    @Size(max = 18, message = "Monetary value must be less or equal than 18 digits")
+    @ValidBigDecimalValueString(message = "Monetary value must be a valid positive number")
     public String monetary_value;
 
 }

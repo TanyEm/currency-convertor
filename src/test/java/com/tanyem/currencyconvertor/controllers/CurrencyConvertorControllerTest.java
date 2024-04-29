@@ -63,7 +63,7 @@ class CurrencyConvertorControllerTest {
                 .andExpect(jsonPath("$.errors.target_currency[2]").value("Target currency must be 3 characters"))
                 .andExpect(jsonPath("$.errors.monetary_value").isArray())
                 .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value cannot be empty"))
-                .andExpect(jsonPath("$.errors.monetary_value[1]").value("Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"));
+                .andExpect(jsonPath("$.errors.monetary_value[1]").value("Monetary value must be a valid positive number"));
     }
 
     @Test
@@ -114,7 +114,7 @@ class CurrencyConvertorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.errors.monetary_value").isArray())
-                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"));
+                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a valid positive number"));
     }
 
     @Test
@@ -130,7 +130,7 @@ class CurrencyConvertorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.errors.monetary_value").isArray())
-                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"));
+                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a valid positive number"));
     }
 
     @Test
@@ -146,6 +146,6 @@ class CurrencyConvertorControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.errors.monetary_value").isArray())
-                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a positive number in minor units (e.g. 1_000_000 for $1)"));
+                .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a valid positive number"));
     }
 }

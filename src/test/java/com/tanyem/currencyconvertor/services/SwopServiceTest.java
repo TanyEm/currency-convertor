@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,8 +33,8 @@ class SwopServiceTest {
 
     @Test
     void getRates() {
-        SwopRateDTO rateEUR = new SwopRateDTO("USD", "EUR", 0.85, "2024-04-01");
-        SwopRateDTO rateAUD = new SwopRateDTO("USD", "AUD", 1.63, "2024-04-01");
+        SwopRateDTO rateEUR = new SwopRateDTO("USD", "EUR", new BigDecimal("0.85"), "2024-04-01");
+        SwopRateDTO rateAUD = new SwopRateDTO("USD", "AUD", new BigDecimal("1.63"), "2024-04-01");
         List<SwopRateDTO> rates = Arrays.asList(rateEUR, rateAUD);
         Flux<SwopRateDTO> flux = Flux.fromIterable(rates);
 
