@@ -1,10 +1,10 @@
 package com.tanyem.currencyconvertor.services;
 
 import com.tanyem.currencyconvertor.dtos.SwopRateDTO;
+import com.tanyem.currencyconvertor.models.RateModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -35,8 +36,12 @@ class SwopServiceTest {
     void getRates() {
         SwopRateDTO rateEUR = new SwopRateDTO("USD", "EUR", new BigDecimal("0.85"), "2024-04-01");
         SwopRateDTO rateAUD = new SwopRateDTO("USD", "AUD", new BigDecimal("1.63"), "2024-04-01");
-        List<SwopRateDTO> rates = Arrays.asList(rateEUR, rateAUD);
-        Flux<SwopRateDTO> flux = Flux.fromIterable(rates);
+        List<SwopRateDTO> ratesList = Arrays.asList(rateEUR, rateAUD);
+        Map<String, RateModel> rates = Map.of(
+                "USDEUR", new RateModel(new BigDecimal("0.85"), "2024-04-01"),
+                "USDAUD", new RateModel(new BigDecimal("1.63"), "2024-04-01")
+        );
+        Flux<SwopRateDTO> flux = Flux.fromIterable(ratesList);
 
         when(webClientBuilder.baseUrl("https://swop.cx")).thenReturn(webClientBuilder);
         when(webClientBuilder.build()).thenReturn(webClient);
@@ -46,8 +51,11 @@ class SwopServiceTest {
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(flux);
 
         SwopService swopService = new SwopService(webClientBuilder);
-        List<SwopRateDTO> actualRates = swopService.getRates();
-        assertEquals(rates, actualRates);
+        Map<String, RateModel> actualRates = swopService.getRates();
+        assertEquals(rates.get("USDEUR").getRate(), actualRates.get("USDEUR").getRate());
+        assertEquals(rates.get("USDEUR").getDate(), actualRates.get("USDEUR").getDate());
+        assertEquals(rates.get("USDAUD").getRate(), actualRates.get("USDAUD").getRate());
+        assertEquals(rates.get("USDAUD").getDate(), actualRates.get("USDAUD").getDate());
     }
 
     @Test
