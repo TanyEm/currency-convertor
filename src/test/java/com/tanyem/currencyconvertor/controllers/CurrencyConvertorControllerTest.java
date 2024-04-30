@@ -1,11 +1,19 @@
 package com.tanyem.currencyconvertor.controllers;
 
+import com.tanyem.currencyconvertor.models.MonetaryUnit;
+import com.tanyem.currencyconvertor.services.CurrencyRateService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.util.Currency;
+
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -16,6 +24,10 @@ class CurrencyConvertorControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private CurrencyRateService currencyRateService;
+
 
     @Test
     void indexReturnsWelcomeMessage() throws Exception {
@@ -28,6 +40,14 @@ class CurrencyConvertorControllerTest {
 
     @Test
     void ratesSuccessfullyReturnsConversion() throws Exception {
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("USD"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("EUR");
+
+        when(currencyRateService.convert(
+                argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
+                argThat(argument -> argument.equals(targetCurrency))
+        )).thenReturn(new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(85)));
+
         this.mockMvc.perform(
                 get("/rates")
                         .param("source_currency", "USD")
@@ -38,7 +58,7 @@ class CurrencyConvertorControllerTest {
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("$100.00"));
+                .andExpect(jsonPath("$.result").value("$85.00"));
     }
 
     @Test

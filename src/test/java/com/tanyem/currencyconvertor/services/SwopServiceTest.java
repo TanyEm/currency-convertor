@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 class SwopServiceTest {
 
-    @MockBean
+    @Mock
     private WebClient.Builder webClientBuilder;
 
     @Mock
@@ -42,11 +42,10 @@ class SwopServiceTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri("/rest/rates")).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.header("Authorization", "ApiKey test-api-key")).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(flux);
 
-        SwopService swopService = new SwopService(webClientBuilder,"test-api-key");
+        SwopService swopService = new SwopService(webClientBuilder);
         List<SwopRateDTO> actualRates = swopService.getRates();
         assertEquals(rates, actualRates);
     }
@@ -57,11 +56,10 @@ class SwopServiceTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri("/rest/rates")).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.header("Authorization", "ApiKey wrong-test-api-key")).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(Flux.error(new WebClientResponseException(401, "Unauthorized", null, null, null)));
 
-        SwopService swopService = new SwopService(webClientBuilder,"wrong-test-api-key");
+        SwopService swopService = new SwopService(webClientBuilder);
 
         WebClientResponseException exception = assertThrows(WebClientResponseException.class, swopService::getRates);
         assertEquals(401, exception.getRawStatusCode());
