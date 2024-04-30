@@ -2,6 +2,8 @@ package com.tanyem.currencyconvertor.controllers;
 
 import com.tanyem.currencyconvertor.dtos.RateRequestDTO;
 import com.tanyem.currencyconvertor.dtos.RateResponseDTO;
+import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
+import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
 import com.tanyem.currencyconvertor.models.MonetaryUnit;
 import com.tanyem.currencyconvertor.services.CurrencyRateService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
@@ -39,7 +42,7 @@ public class CurrencyConvertorController {
     }
 
     @GetMapping(path = "/rates", produces = "application/json")
-    public RateResponseDTO rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {
+    public ResponseEntity<?> rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {
         logger.info(
                 "Convert: {} to {} with value: {}",
                 rateRequestDTO.source_currency,
@@ -52,11 +55,20 @@ public class CurrencyConvertorController {
         );
         Currency targetCurrency = Currency.getInstance(rateRequestDTO.target_currency);
 
-        MonetaryUnit targetMonetaryUnit = currencyRateService.convert(monetaryUnit, targetCurrency);
+        MonetaryUnit targetMonetaryUnit;
+        try {
+            targetMonetaryUnit = currencyRateService.convert(monetaryUnit, targetCurrency);
+        } catch (CurrencyPairNotSupportedException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (SwopAPINotAvailableException e) {
+            return ResponseEntity.status(502).body(e.getMessage());
+        }
 
         Locale locale = localeResolver.resolveLocale(request);
         NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
+        nf.setCurrency(targetMonetaryUnit.getCurrency());
+        RateResponseDTO rateResponseDTO = new RateResponseDTO(nf.format(targetMonetaryUnit.getMonitoryValue()), System.currentTimeMillis());
 
-        return new RateResponseDTO(nf.format(targetMonetaryUnit.getMonitoryValue()), System.currentTimeMillis());
+        return ResponseEntity.ok(rateResponseDTO);
     }
 }

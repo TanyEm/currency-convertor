@@ -40,25 +40,48 @@ class CurrencyConvertorControllerTest {
 
     @Test
     void ratesSuccessfullyReturnsConversion() throws Exception {
-        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("USD"), new BigDecimal(100));
-        Currency targetCurrency = Currency.getInstance("EUR");
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("USD");
 
         when(currencyRateService.convert(
                 argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
                 argThat(argument -> argument.equals(targetCurrency))
-        )).thenReturn(new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(85)));
+        )).thenReturn(new MonetaryUnit(Currency.getInstance("USD"), new BigDecimal("107.18")));
 
         this.mockMvc.perform(
                 get("/rates")
-                        .param("source_currency", "USD")
-                        .param("target_currency", "EUR")
+                        .param("source_currency", "EUR")
+                        .param("target_currency", "USD")
                         .param("monetary_value", "100")
                         .header("Accept-Language", "en-US")
                 )
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("$85.00"));
+                .andExpect(jsonPath("$.result").value("$107.18"));
+    }
+
+    @Test
+    void ratesSuccessfullyReturnsConversionDifferentLocale() throws Exception {
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("USD");
+
+        when(currencyRateService.convert(
+                argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
+                argThat(argument -> argument.equals(targetCurrency))
+        )).thenReturn(new MonetaryUnit(Currency.getInstance("USD"), new BigDecimal("107.18")));
+
+        this.mockMvc.perform(
+                        get("/rates")
+                                .param("source_currency", "EUR")
+                                .param("target_currency", "USD")
+                                .param("monetary_value", "100")
+                                .header("Accept-Language", "fi-FI")
+                )
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("107,18 $"));
     }
 
     @Test

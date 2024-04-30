@@ -1,13 +1,17 @@
 package com.tanyem.currencyconvertor.services;
 
 import com.tanyem.currencyconvertor.dtos.SwopRateDTO;
+import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
+import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
 import com.tanyem.currencyconvertor.models.RateModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 
@@ -33,9 +37,24 @@ public class SwopService {
     public RateModel getRate(Currency sourceCurrency, Currency targetCurrency) {
         try {
             Map<String, RateModel> rates = getRates();
-            return rates.get(sourceCurrency.getCurrencyCode() + targetCurrency.getCurrencyCode());
+            RateModel found = rates.get(sourceCurrency.getCurrencyCode() + targetCurrency.getCurrencyCode());
+            if (found == null) {
+                throw new CurrencyPairNotSupportedException("Requested currency pair "
+                        + sourceCurrency.getCurrencyCode()
+                        + " to "
+                        + targetCurrency.getCurrencyCode() + " is not supported");
+            }
+            return found;
+        } catch (WebClientRequestException e) {
+            logger.error("Swop API can not be reached: {}", e.getMessage());
+            throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
         } catch (WebClientResponseException e) {
-            return null;
+            if (e.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
+                logger.error("Swap API returned 401 Unauthorized. Check your API key.");
+            } else {
+                logger.error("Swop API call returned an error: {}", e.getMessage());
+            }
+            throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
         }
     }
 
