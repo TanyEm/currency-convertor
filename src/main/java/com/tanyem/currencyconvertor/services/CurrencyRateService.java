@@ -1,7 +1,6 @@
 package com.tanyem.currencyconvertor.services;
 
 import com.tanyem.currencyconvertor.models.MonetaryUnit;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
