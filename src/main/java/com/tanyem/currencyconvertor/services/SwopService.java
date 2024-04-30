@@ -1,5 +1,9 @@
 package com.tanyem.currencyconvertor.services;
 
+import com.influxdb.client.InfluxDBClient;
+import com.influxdb.client.WriteApiBlocking;
+import com.influxdb.client.domain.WritePrecision;
+import com.influxdb.client.write.Point;
 import com.tanyem.currencyconvertor.dtos.SwopRateDTO;
 import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
 import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
@@ -15,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -24,7 +29,10 @@ public class SwopService {
 
     private final WebClient webClient;
 
-    public SwopService(WebClient.Builder webClientBuilder) {
+    private final InfluxDBClient influxDBClient;
+
+    public SwopService(InfluxDBClient influxDBClient, WebClient.Builder webClientBuilder) {
+        this.influxDBClient = influxDBClient;
         this.webClient = webClientBuilder.baseUrl("https://swop.cx").build();
     }
 
@@ -35,20 +43,54 @@ public class SwopService {
 
     @Cacheable(value = "rates", key = "#sourceCurrency.currencyCode + #targetCurrency.currencyCode")
     public RateModel getRate(Currency sourceCurrency, Currency targetCurrency) {
+        Map<String, RateModel> rates = getRates();
+        RateModel found = rates.get(sourceCurrency.getCurrencyCode() + targetCurrency.getCurrencyCode());
+        if (found == null) {
+            throw new CurrencyPairNotSupportedException("Requested currency pair "
+                    + sourceCurrency.getCurrencyCode()
+                    + " to "
+                    + targetCurrency.getCurrencyCode() + " is not supported");
+        }
+        return found;
+    }
+
+    Map<String, RateModel> getRates() {
+        WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
         try {
-            Map<String, RateModel> rates = getRates();
-            RateModel found = rates.get(sourceCurrency.getCurrencyCode() + targetCurrency.getCurrencyCode());
-            if (found == null) {
-                throw new CurrencyPairNotSupportedException("Requested currency pair "
-                        + sourceCurrency.getCurrencyCode()
-                        + " to "
-                        + targetCurrency.getCurrencyCode() + " is not supported");
+            logger.info("Fetching rates from Swop API");
+            Flux<SwopRateDTO> responseFlux = webClient.get()
+                    .uri("/rest/rates")
+                    .retrieve()
+                    .bodyToFlux(SwopRateDTO.class);
+
+            List<SwopRateDTO> rates = responseFlux.collectList().block();
+            Map<String, RateModel> ratesMap = new HashMap<String, RateModel>();
+
+            for (SwopRateDTO rate : rates) {
+                RateModel rateModel = new RateModel(rate.getQuote(), rate.getDate());
+                ratesMap.put((rate.getBase_currency() + rate.getQuote_currency()), rateModel);
             }
-            return found;
+
+            Point point = Point.measurement("swop_api_call")
+                    .addField("success", true)
+                    .time(Instant.now(), WritePrecision.MS);
+            writeApi.writePoint(point);
+
+            return ratesMap;
         } catch (WebClientRequestException e) {
+            Point point = Point.measurement("swop_api_call")
+                    .addField("success", false)
+                    .time(Instant.now(), WritePrecision.MS);
+            writeApi.writePoint(point);
+
             logger.error("Swop API can not be reached: {}", e.getMessage());
             throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
         } catch (WebClientResponseException e) {
+            Point point = Point.measurement("swop_api_call")
+                    .addField("success", false)
+                    .time(Instant.now(), WritePrecision.MS);
+            writeApi.writePoint(point);
+
             if (e.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
                 logger.error("Swap API returned 401 Unauthorized. Check your API key.");
             } else {
@@ -56,23 +98,5 @@ public class SwopService {
             }
             throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
         }
-    }
-
-    Map<String, RateModel> getRates() throws WebClientResponseException {
-        logger.info("Fetching rates from Swop API");
-        Flux<SwopRateDTO> responseFlux = webClient.get()
-                .uri("/rest/rates")
-                .retrieve()
-                .bodyToFlux(SwopRateDTO.class);
-
-        List<SwopRateDTO> rates = responseFlux.collectList().block();
-        Map<String, RateModel> ratesMap = new HashMap<String, RateModel>();
-
-        for (SwopRateDTO rate : rates) {
-            RateModel rateModel = new RateModel(rate.getQuote(), rate.getDate());
-            ratesMap.put((rate.getBase_currency() + rate.getQuote_currency()), rateModel);
-        }
-
-        return ratesMap;
     }
 }

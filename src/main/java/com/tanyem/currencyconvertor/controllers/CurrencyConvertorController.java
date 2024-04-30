@@ -1,5 +1,6 @@
 package com.tanyem.currencyconvertor.controllers;
 
+import com.influxdb.client.InfluxDBClient;
 import com.tanyem.currencyconvertor.dtos.RateRequestDTO;
 import com.tanyem.currencyconvertor.dtos.RateResponseDTO;
 import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
@@ -30,9 +31,12 @@ public class CurrencyConvertorController {
 
     private final CurrencyRateService currencyRateService;
 
+    private final InfluxDBClient influxDBClient;
+
     @Autowired
-    public CurrencyConvertorController(CurrencyRateService currencyRateService) {
+    public CurrencyConvertorController(CurrencyRateService currencyRateService, InfluxDBClient influxDBClient) {
         this.currencyRateService = currencyRateService;
+        this.influxDBClient = influxDBClient;
         logger.info("CurrencyConvertorController created!");
     }
 

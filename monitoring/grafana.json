@@ -1,0 +1,346 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "fdkb615tn6vi8a"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": false,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rates_request\")\n  |> filter(fn: (r) => r[\"_field\"] == \"response_code\")\n  |> filter(fn: (r) => r._value >= 200 and r._value < 300)\n  |> aggregateWindow(every: 1s, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"2xx requests\"}))",
+          "refId": "2xx requests"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": false,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rates_request\")\n  |> filter(fn: (r) => r[\"_field\"] == \"response_code\")\n  |> filter(fn: (r) => r._value >= 400 and r._value < 500)\n  |> aggregateWindow(every: 1s, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"4xx requests\"}))",
+          "refId": "4xx requests"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": false,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rates_request\")\n  |> filter(fn: (r) => r[\"_field\"] == \"response_code\")\n  |> filter(fn: (r) => r._value >= 500)\n  |> aggregateWindow(every: 1s, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"5xx requests\"}))\n  ",
+          "refId": "5xx requests"
+        }
+      ],
+      "title": "Incoming requests",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "fdkb615tn6vi8a"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 9,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"swop_api_call\")\n  |> filter(fn: (r) => r[\"_field\"] == \"success\")\n  |> filter(fn: (r) => r._value == true)\n  |> aggregateWindow(every: 1s, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"OK\"}))",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": false,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"swop_api_call\")\n  |> filter(fn: (r) => r[\"_field\"] == \"success\")\n  |> filter(fn: (r) => r._value == false)\n  |> aggregateWindow(every: 1s, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"Failed\"}))",
+          "refId": "B"
+        }
+      ],
+      "title": "Swop API health",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "fdkb615tn6vi8a"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": true,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rates_request\")\n  |> filter(fn: (r) => r[\"_field\"] == \"response_code\")\n  |> filter(fn: (r) => r._value >= 200 and r._value < 300)\n  |> aggregateWindow(every: 1h, fn: count)\n  |> map(fn: (r) => ({ r with _field: \"all_requests\" }))\n",
+          "refId": "all_requests"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "fdkb615tn6vi8a"
+          },
+          "hide": true,
+          "query": "from(bucket: \"myBucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"swop_api_call\")\n  |> filter(fn: (r) => r[\"_field\"] == \"success\")\n  |> filter(fn: (r) => r._value == true)\n  |> aggregateWindow(every: 1h, fn: count)  // Aggregate counts per second\n  |> map(fn: (r) => ({r with _field: \"swop_api_calls\"}))",
+          "refId": "swop_api_calls"
+        },
+        {
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "expression": "1 - $swop_api_calls / $all_requests",
+          "hide": false,
+          "refId": "Ratio",
+          "type": "math"
+        }
+      ],
+      "title": "Cache hit % (last 1h)",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "CurrencyConvertor",
+  "uid": "cdkb85oh1le68f",
+  "version": 10,
+  "weekStart": ""
+}
