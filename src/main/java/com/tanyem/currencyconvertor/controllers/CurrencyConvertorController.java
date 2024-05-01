@@ -9,6 +9,7 @@ import com.tanyem.currencyconvertor.models.MonetaryUnit;
 import com.tanyem.currencyconvertor.services.CurrencyRateService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,15 @@ public class CurrencyConvertorController {
 
     @GetMapping(path = "/rates", produces = "application/json")
     public ResponseEntity<?> rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {
+        return convertCurrencyAndPrepareResponse(request, rateRequestDTO);
+    }
+
+    @PostMapping(path = "/convert", produces = "application/json")
+    public ResponseEntity<?> ratesPost(HttpServletRequest request, @RequestBody @Valid RateRequestDTO rateRequestDTO) {
+        return convertCurrencyAndPrepareResponse(request, rateRequestDTO);
+    }
+
+    private ResponseEntity<?> convertCurrencyAndPrepareResponse(HttpServletRequest request, @NotNull RateRequestDTO rateRequestDTO) {
         logger.info(
                 "Convert: {} to {} with value: {}",
                 rateRequestDTO.source_currency,
@@ -57,8 +67,8 @@ public class CurrencyConvertorController {
                 Currency.getInstance(rateRequestDTO.source_currency),
                 new BigDecimal(rateRequestDTO.monetary_value)
         );
-        Currency targetCurrency = Currency.getInstance(rateRequestDTO.target_currency);
 
+        Currency targetCurrency = Currency.getInstance(rateRequestDTO.target_currency);
         MonetaryUnit targetMonetaryUnit;
         try {
             targetMonetaryUnit = currencyRateService.convert(monetaryUnit, targetCurrency);

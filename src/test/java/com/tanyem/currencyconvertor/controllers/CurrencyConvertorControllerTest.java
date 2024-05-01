@@ -1,5 +1,7 @@
 package com.tanyem.currencyconvertor.controllers;
 
+import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
+import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
 import com.tanyem.currencyconvertor.models.MonetaryUnit;
 import com.tanyem.currencyconvertor.services.CurrencyRateService;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,28 @@ class CurrencyConvertorControllerTest {
                         .param("target_currency", "USD")
                         .param("monetary_value", "100")
                         .header("Accept-Language", "en-US")
+                )
+                .andDo(print())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("$107.18"));
+    }
+
+    @Test
+    void ratesSuccessfullyReturnsConversionWithBody() throws Exception {
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("USD");
+
+        when(currencyRateService.convert(
+                argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
+                argThat(argument -> argument.equals(targetCurrency))
+        )).thenReturn(new MonetaryUnit(Currency.getInstance("USD"), new BigDecimal("107.18")));
+
+        this.mockMvc.perform(
+                        post("/convert")
+                                .contentType("application/json")
+                                .content("{ \"source_currency\": \"EUR\", \"target_currency\": \"USD\", \"monetary_value\": \"100\" }")
+                                .header("Accept-Language", "en-US")
                 )
                 .andDo(print())
                 .andExpect(content().contentType("application/json"))
@@ -190,5 +214,47 @@ class CurrencyConvertorControllerTest {
                 .andExpect(content().contentType("application/json"))
                 .andExpect(jsonPath("$.errors.monetary_value").isArray())
                 .andExpect(jsonPath("$.errors.monetary_value[0]").value("Monetary value must be a valid positive number"));
+    }
+
+    @Test
+    void ratesThrowsCurrencyPairNotSupportedException() throws Exception {
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("USD");
+
+        when(currencyRateService.convert(
+                argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
+                argThat(argument -> argument.equals(targetCurrency))
+        )).thenThrow(new CurrencyPairNotSupportedException("Currency pair not supported"));
+
+        this.mockMvc.perform(
+                        get("/rates")
+                                .param("source_currency", "EUR")
+                                .param("target_currency", "USD")
+                                .param("monetary_value", "100")
+                                .header("Accept-Language", "en-US")
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void ratesThrowsSwopAPINotAvailableException() throws Exception {
+        MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));
+        Currency targetCurrency = Currency.getInstance("USD");
+
+        when(currencyRateService.convert(
+                argThat(argument -> argument.getCurrency().equals(monetaryUnit.getCurrency()) && argument.getMonitoryValue().equals(monetaryUnit.getMonitoryValue())),
+                argThat(argument -> argument.equals(targetCurrency))
+        )).thenThrow(new SwopAPINotAvailableException("Swop API not available"));
+
+        this.mockMvc.perform(
+                        get("/rates")
+                                .param("source_currency", "EUR")
+                                .param("target_currency", "USD")
+                                .param("monetary_value", "100")
+                                .header("Accept-Language", "en-US")
+                )
+                .andDo(print())
+                .andExpect(status().isBadGateway());
     }
 }
