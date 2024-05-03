@@ -14,14 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import java.util.Currency;
-import java.util.Locale;
+import java.util.*;
 
 @RestController
 public class CurrencyConvertorController {
@@ -41,10 +41,10 @@ public class CurrencyConvertorController {
         logger.info("CurrencyConvertorController created!");
     }
 
-    @GetMapping(path = "/", produces = "application/json")
-    public String index() {
-        return "{ \"message\": \"Welcome to the Currency Convertor API!\" }";
-    }
+//    @GetMapping(path = "/", produces = "application/json")
+//    public String index() {
+//        return "{ \"message\": \"Welcome to the Currency Convertor API!\" }";
+//    }
 
     @GetMapping(path = "/rates", produces = "application/json")
     public ResponseEntity<?> rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {

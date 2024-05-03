@@ -4,6 +4,7 @@ import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException
 import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
 import com.tanyem.currencyconvertor.models.MonetaryUnit;
 import com.tanyem.currencyconvertor.services.CurrencyRateService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +32,7 @@ class CurrencyConvertorControllerTest {
     private CurrencyRateService currencyRateService;
 
 
+    @Disabled("Disabled while the index endpoint is disabled")
     @Test
     void indexReturnsWelcomeMessage() throws Exception {
         this.mockMvc.perform(get("/"))
