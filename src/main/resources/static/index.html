@@ -7,7 +7,13 @@
 </head>
 <body>
 <h1>Currency Convertor</h1>
-<div id="app"></div>
+<div id="app">
+    <input v-model="sourceCurrency" placeholder="Source Currency">
+    <input v-model="targetCurrency" placeholder="Target Currency">
+    <input v-model="monetaryValue" placeholder="Monetary Value">
+    <button @click="fetchRate">Fetch Rate</button>
+    <ConversionResult :rate="rate"/>
+</div>
 <script src="js/main.js"></script>
 
 </body>
