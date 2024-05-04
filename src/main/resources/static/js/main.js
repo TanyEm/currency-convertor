@@ -20,14 +20,20 @@ const currencyConvertorAPI = {
 }
 
 const ConversionResult = {
-    props: ['rate'],
-    template: '<div>{{rate}}</div>'
+    props: ['result', 'errorMessage', 'monetaryValue', 'sourceCurrency'],
+    template: `
+        <div>
+            <div v-if="result" class="conversion-result">{{monetaryValue}} {{sourceCurrency}} equals {{result}}</div>
+            <div v-else-if="errorMessage" class="error-message"  v-html="errorMessage"></div>
+            <div v-else>Conversion result will be displayed here...</div>
+        </div>
+    `
 }
 
 const app = createApp({
     data() {
         return {
-            rate: '',
+            result: '',
             sourceCurrency: '',
             targetCurrency: '',
             monetaryValue: '',
@@ -38,27 +44,29 @@ const app = createApp({
         ConversionResult
     },
     methods: {
-        fetchRate() {
+        fetchResult() {
             currencyConvertorAPI.fetch(this.sourceCurrency, this.targetCurrency, this.monetaryValue)
                 .then(data => {
-                    this.rate = data.result;
+                    this.result = data.result;
                     this.errorMessage = '';
                 })
                 .catch(error => {
-                    this.rate = '';
-                    this.errorMessage = Object.values(error.errors).flat().join('. ');
+                    this.result = '';
+                    this.errorMessage = Object.values(error.errors).flat().map(message => `<p>${message}</p>`).join('');
                     console.error('Error:', error);
                 });
         }
     },
     template: `
         <div>
-            <input v-model="sourceCurrency" placeholder="Source Currency">
-            <input v-model="targetCurrency" placeholder="Target Currency">
-            <input v-model="monetaryValue" placeholder="Monetary Value">
-            <button @click="fetchRate">Fetch Rate</button>
-            <ConversionResult :rate="rate"/>
-            <div v-if="errorMessage">{{errorMessage}}</div>
+            <h1>Currency Convertor</h1>
+            <form @submit.prevent="fetchResult">
+                <input v-model="sourceCurrency" placeholder="Source Currency">
+                <input v-model="targetCurrency" placeholder="Target Currency">
+                <input v-model="monetaryValue" placeholder="Monetary Value">
+                <button type="submit">Convert</button>
+            </form>
+            <ConversionResult :result="result" :errorMessage="errorMessage" :monetaryValue="monetaryValue" :sourceCurrency="sourceCurrency"/>
         </div>
     `
 })

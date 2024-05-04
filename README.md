@@ -1,5 +1,24 @@
 # Currency Converter
-This is a simple currency converter that converts one currency to another. It uses the [ExchangeRate-API](https://www.exchangerate-api.com/) to get the exchange rates.
+This is a simple currency converter that converts one currency to another. It uses the [SWOP-API](https://swop.cx/) to get the exchange rates. The application pplication built with Java, JavaScript, Spring Boot, and Vue.js.
+## Project structure
+The project is divided into two main parts:
+   - The backend server, written in Java using the Spring Boot framework.
+   - The frontend client, written in JavaScript using the Vue.js framework.
+The backend server provides a REST API for fetching currency conversion rates. The frontend client provides a user interface for users to input their desired source currency, target currency, and monetary value, and then displays the conversion result.
+
+## Backend server
+The backend server is a simple Spring Boot application that provides a REST API for fetching currency conversion rates. The server fetches the exchange rates from the SWOP-API and caches them in memory for a configurable amount of time. The server exposes a single endpoint `/convert` that accepts a source currency, target currency, and monetary value as input and returns the converted monetary value as output.
+It includes the following main components:  
+   - CurrencyConvertorController.java: This is the main controller for the application. It handles HTTP requests and responses.
+   - CurrencyRateService.java: This service is responsible for converting currencies.
+   - InfluxDBClient.java: This client is used for interacting with the InfluxDB database.
+
+## Running the application in Docker
+Here's how the app can be run in the Docker container:
+```bash
+$ docker run -e API_KEY=your_api_key -e INFLUXDB_TOKEN=your_influxdb_token currency-convertor
+```
+In the above command, your_api_key and your_influxdb_token should be replaced with the actual API key and InfluxDB token.
 
 ## Grafana and InfluxDB
 
