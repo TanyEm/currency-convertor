@@ -20,10 +20,10 @@ const currencyConvertorAPI = {
 }
 
 const ConversionResult = {
-    props: ['result', 'errorMessage', 'monetaryValue', 'sourceCurrency'],
+    props: ['result', 'errorMessage', 'monetaryValue', 'sourceCurrency', 'formatCurrency'],
     template: `
         <div>
-            <div v-if="result" class="conversion-result">{{monetaryValue}} {{sourceCurrency}} equals {{result}}</div>
+            <div v-if="result" class="conversion-result">{{ formatCurrency(monetaryValue, sourceCurrency) }} equals {{result}}</div>
             <div v-else-if="errorMessage" class="error-message"  v-html="errorMessage"></div>
             <div v-else>Conversion result will be displayed here...</div>
         </div>
@@ -37,6 +37,9 @@ const app = createApp({
             sourceCurrency: '',
             targetCurrency: '',
             monetaryValue: '',
+            currentSourceCurrency: '',
+            currentTargetCurrency: '',
+            currentMonetaryValue: '',
             errorMessage: ''
         }
     },
@@ -45,16 +48,26 @@ const app = createApp({
     },
     methods: {
         fetchResult() {
-            currencyConvertorAPI.fetch(this.sourceCurrency, this.targetCurrency, this.monetaryValue)
+            this.currentSourceCurrency = this.sourceCurrency;
+            this.currentTargetCurrency = this.targetCurrency;
+            this.currentMonetaryValue = this.monetaryValue;
+
+            currencyConvertorAPI.fetch(this.currentSourceCurrency, this.currentTargetCurrency, this.currentMonetaryValue)
                 .then(data => {
                     this.result = data.result;
                     this.errorMessage = '';
                 })
                 .catch(error => {
                     this.result = '';
-                    this.errorMessage = Object.values(error.errors).flat().map(message => `<p>${message}</p>`).join('');
+                    let uniqueErrorMessages = new Set(Object.entries(error.errors).map(([key, messages]) => Array.isArray(messages) ? messages.map(message => `<p>${message}</p>`).join('') : `<p>${messages}</p>`));
+                    this.errorMessage = Array.from(uniqueErrorMessages).join(' ');
                     console.error('Error:', error);
                 });
+        },
+        formatCurrency(monetaryValue, sourceCurrency) {
+            let userLanguage = navigator.language;
+            console.log(userLanguage);
+            return new Intl.NumberFormat(userLanguage, { style: 'currency', currency: sourceCurrency }).format(monetaryValue);
         }
     },
     template: `
@@ -66,7 +79,7 @@ const app = createApp({
                 <input v-model="monetaryValue" placeholder="Monetary Value">
                 <button type="submit">Convert</button>
             </form>
-            <ConversionResult :result="result" :errorMessage="errorMessage" :monetaryValue="monetaryValue" :sourceCurrency="sourceCurrency"/>
+            <ConversionResult :result="result" :errorMessage="errorMessage" :monetaryValue="currentMonetaryValue" :sourceCurrency="currentSourceCurrency" :formatCurrency="formatCurrency"/>
         </div>
     `
 })

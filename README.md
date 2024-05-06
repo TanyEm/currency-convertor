@@ -62,7 +62,7 @@ In the example above, the InfluxDB IP is **172.18.0.3**
     - Fill InfluxDB Details
     - ![GrafanaFluxConnector](pics/GrafanaFluxConnector.png)
     - Import the dashboard from `monitoring/grafana.json`
-    - Note the DataSource UID (`ddkbsngx09ddsa`) needs to be updated in the JSON file
+    - Note the DataSource UID (`ddkbsngx09ddsa`) needs to be updated in the JSON file. Simply change it on Grafana Import dashboard after loading the JSON. 
 5. Set the correct values in the `application.properties` file, e.g.:
 ```properties
 influxdb.token=Q5eo_o....
