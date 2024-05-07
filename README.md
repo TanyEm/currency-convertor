@@ -1,5 +1,5 @@
 # Currency Converter
-This is a simple currency converter that converts one currency to another. It uses the [SWOP-API](https://swop.cx/) to get the exchange rates. The application pplication built with Java, JavaScript, Spring Boot, and Vue.js.
+This is a simple currency converter that converts one currency to another. It uses the [SWOP-API](https://swop.cx/) to get the exchange rates. The application built with Java, JavaScript, Spring Boot, and Vue.js.
 # Contents
 - [Project structure](#project-structure)
 - [Backend server](#backend-server)
@@ -7,12 +7,13 @@ This is a simple currency converter that converts one currency to another. It us
 - [Grafana and InfluxDB](#grafana-and-influxdb)
   - [How to run](#how-to-run)
   - [Running the application in Docker](#running-the-application-in-docker)
-  - [Running the application in local environment](#running-the-application-in-local-environment)
+  - [Running the application in a local environment without Docker](#running-the-application-in-a-local-environment-without-docker)
   - [Running tests](#running-tests)
 ## Project structure
 The project is divided into two main parts:
    - The backend server, written in Java using the Spring Boot framework.
    - The frontend client, written in JavaScript using the Vue.js framework.
+
 The backend server provides a REST API for fetching currency conversion rates. The frontend client provides a user interface for users to input their desired source currency, target currency, and monetary value, and then displays the conversion result.
 ![Currency_convertor](pics/Currency_converor.png)
 
@@ -51,7 +52,7 @@ $ docker network create influxGrafana
 $ docker network connect influxGrafana grafana
 $ docker network connect influxGrafana influxdb
 ```
-3. Go to http://localhost:8086 and setup InfluxDB. Default values for the setup are:
+3. Go to http://localhost:8086 and setup InfluxDB. The default values for the setup are:
     - Bucket: myBucket
     - Organization: currencyConvertor
     - Do not forget to save API token for environment variables.
@@ -67,14 +68,16 @@ $ docker network inspect influxGrafana
  // ...
 ```
 In the example above, the InfluxDB IP is **172.18.0.3** 
+
 4. Go to http://localhost:3000 and setup Grafana:
     - Create a connector to InfluxDB
-    - Make sure to choose the **Flux** query language 
+    - Make sure to choose the **Flux** query language
     - No Basic Auth
     - Fill InfluxDB Details
     - ![GrafanaFluxConnector](pics/GrafanaFluxConnector.png)
     - Import the dashboard from `monitoring/grafana.json`
-    - Note the DataSource UID (`ddkbsngx09ddsa`) needs to be updated in the JSON file. Simply change it on Grafana Import dashboard after loading the JSON. 
+    - Note the DataSource UID (`ddkbsngx09ddsa`) needs to be updated in the JSON file. Simply change it on Grafana Import dashboard after loading the JSON.
+    
 5. Run the application and check the metrics in Grafana.
 
 ### Running the application in Docker
@@ -96,7 +99,7 @@ $ docker network connect influxGrafana currency-convertor
 ```
 3. Go to http://localhost:8080 and check the application.
 
-### Running the application in local environment without Docker
+### Running the application in a local environment without Docker
 Here's how the app can be run in the local environment:
 1. If you want to run the app with metrics start the InfluxDB and Grafana containers
 2. Run the application:
