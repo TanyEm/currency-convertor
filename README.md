@@ -10,11 +10,17 @@ This is a simple currency converter that converts one currency to another. It us
   - [Running the application in a local environment without Docker](#running-the-application-in-a-local-environment-without-docker)
   - [Running tests](#running-tests)
 ## Project structure
-The project is divided into two main parts:
+The project is divided into three main parts:
    - The backend server, written in Java using the Spring Boot framework.
    - The frontend client, written in JavaScript using the Vue.js framework.
+   - The monitoring part, using InfluxDB and Grafana.
+ 
+The project structure is shown in the diagram below:
+
+![Currency_convertor structure](pics/Currency_Convertor.drawio.png)
 
 The backend server provides a REST API for fetching currency conversion rates. The frontend client provides a user interface for users to input their desired source currency, target currency, and monetary value, and then displays the conversion result.
+
 ![Currency_convertor](pics/Currency_converor.png)
 
 ## Backend server
