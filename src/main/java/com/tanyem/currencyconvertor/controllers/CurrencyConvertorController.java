@@ -32,19 +32,12 @@ public class CurrencyConvertorController {
 
     private final CurrencyRateService currencyRateService;
 
-    private final InfluxDBClient influxDBClient;
 
     @Autowired
     public CurrencyConvertorController(CurrencyRateService currencyRateService, InfluxDBClient influxDBClient) {
         this.currencyRateService = currencyRateService;
-        this.influxDBClient = influxDBClient;
         logger.info("CurrencyConvertorController created!");
     }
-
-//    @GetMapping(path = "/", produces = "application/json")
-//    public String index() {
-//        return "{ \"message\": \"Welcome to the Currency Convertor API!\" }";
-//    }
 
     @GetMapping(path = "/rates", produces = "application/json")
     public ResponseEntity<?> rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {
@@ -57,6 +50,7 @@ public class CurrencyConvertorController {
     }
 
     private ResponseEntity<?> convertCurrencyAndPrepareResponse(HttpServletRequest request, @NotNull RateRequestDTO rateRequestDTO) {
+        try {
         logger.info(
                 "Convert: {} to {} with value: {}",
                 rateRequestDTO.source_currency,
@@ -70,19 +64,20 @@ public class CurrencyConvertorController {
 
         Currency targetCurrency = Currency.getInstance(rateRequestDTO.target_currency);
         MonetaryUnit targetMonetaryUnit;
-        try {
+
             targetMonetaryUnit = currencyRateService.convert(monetaryUnit, targetCurrency);
+            Locale locale = localeResolver.resolveLocale(request);
+            NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
+            nf.setCurrency(targetMonetaryUnit.getCurrency());
+            RateResponseDTO rateResponseDTO = new RateResponseDTO(nf.format(targetMonetaryUnit.getMonitoryValue()), System.currentTimeMillis());
+
+            return ResponseEntity.ok(rateResponseDTO);
         } catch (CurrencyPairNotSupportedException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (SwopAPINotAvailableException e) {
             return ResponseEntity.status(502).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
-
-        Locale locale = localeResolver.resolveLocale(request);
-        NumberFormat nf = NumberFormat.getCurrencyInstance(locale);
-        nf.setCurrency(targetMonetaryUnit.getCurrency());
-        RateResponseDTO rateResponseDTO = new RateResponseDTO(nf.format(targetMonetaryUnit.getMonitoryValue()), System.currentTimeMillis());
-
-        return ResponseEntity.ok(rateResponseDTO);
     }
 }

@@ -13,20 +13,20 @@ import java.util.Locale;
 @Service
 public class CurrencyRateService {
 
-    private final SwopService swopService;
+    private final CurrencyExchangeService currencyExchangeService;
 
-    public CurrencyRateService(SwopService swopService) {
-        this.swopService = swopService;
+    public CurrencyRateService(CurrencyExchangeService currencyExchangeService) {
+        this.currencyExchangeService = currencyExchangeService;
     }
 
     public MonetaryUnit convert(MonetaryUnit monetaryUnit, Currency targetCurrency) {
-        RateModel rateModel = swopService.getRate(monetaryUnit.getCurrency(), targetCurrency);
+        RateModel rateModel = currencyExchangeService.getRate(monetaryUnit.getCurrency(), targetCurrency);
         String currentDate = DateTimeFormatter
                 .ofPattern("yyyy-MM-dd", Locale.ENGLISH)
                 .format(LocalDateTime.now());
         if (!rateModel.getDate().equals(currentDate)) {
-            swopService.clearCache(monetaryUnit.getCurrency(), targetCurrency);
-            rateModel = swopService.getRate(monetaryUnit.getCurrency(), targetCurrency);
+            currencyExchangeService.clearCache(monetaryUnit.getCurrency(), targetCurrency);
+            rateModel = currencyExchangeService.getRate(monetaryUnit.getCurrency(), targetCurrency);
         }
         BigDecimal result = monetaryUnit.getMonitoryValue().multiply(rateModel.getRate());
         return new MonetaryUnit(targetCurrency, result);

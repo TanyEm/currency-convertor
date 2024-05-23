@@ -9,7 +9,6 @@ import com.tanyem.currencyconvertor.exceptions.SwopAPINotAvailableException;
 import com.tanyem.currencyconvertor.models.RateModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -69,7 +68,7 @@ class SwopServiceTest {
 
         Flux<SwopRateDTO> flux = Flux.fromIterable(ratesList);
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(flux);
-        SwopService swopService = new SwopService(influxDBClient, webClientBuilder);
+        SwopServiceCurrency swopService = new SwopServiceCurrency(influxDBClient, webClientBuilder);
 
         RateModel actualRate = swopService.getRate(sourceCurrency, targetCurrency);
         assertEquals(rateModel.getRate(), actualRate.getRate());
@@ -86,7 +85,7 @@ class SwopServiceTest {
 
         Flux<SwopRateDTO> flux = Flux.fromIterable(ratesList);
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(flux);
-        SwopService swopService = new SwopService(influxDBClient, webClientBuilder);
+        SwopServiceCurrency swopService = new SwopServiceCurrency(influxDBClient, webClientBuilder);
 
         CurrencyPairNotSupportedException exception = assertThrows(CurrencyPairNotSupportedException.class, () -> swopService.getRate(sourceCurrency, targetCurrency));
         String expectedMessage = "{\"errors\":{\"source_currency\":[\"Requested currency pair USD to AUD is not supported\"],\"target_currency\":[\"Requested currency pair USD to AUD is not supported\"]}}";
@@ -107,7 +106,7 @@ class SwopServiceTest {
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(flux);
         doNothing().when(writeApiBlocking).writePoint(any(Point.class));
 
-        SwopService swopService = new SwopService(influxDBClient, webClientBuilder);
+        SwopServiceCurrency swopService = new SwopServiceCurrency(influxDBClient, webClientBuilder);
         Map<String, RateModel> actualRates = swopService.getRates();
         assertEquals(rates.get("USDEUR").getRate(), actualRates.get("USDEUR").getRate());
         assertEquals(rates.get("USDEUR").getDate(), actualRates.get("USDEUR").getDate());
@@ -120,7 +119,7 @@ class SwopServiceTest {
         when(responseSpec.bodyToFlux(SwopRateDTO.class)).thenReturn(Flux.error(new WebClientResponseException(401, "Unauthorized", null, null, null)));
         doNothing().when(writeApiBlocking).writePoint(any(Point.class));
 
-        SwopService swopService = new SwopService(influxDBClient, webClientBuilder);
+        SwopServiceCurrency swopService = new SwopServiceCurrency(influxDBClient, webClientBuilder);
 
         SwopAPINotAvailableException exception = assertThrows(SwopAPINotAvailableException.class, swopService::getRates);
         assertEquals("{\"errors\":{\"bad_gateway\":[\"Swop API is not available. Please try again later.\"]}}", exception.getMessage());

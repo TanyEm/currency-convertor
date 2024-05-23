@@ -31,17 +31,6 @@ class CurrencyConvertorControllerTest {
     @MockBean
     private CurrencyRateService currencyRateService;
 
-
-    @Disabled("Disabled while the index endpoint is disabled")
-    @Test
-    void indexReturnsWelcomeMessage() throws Exception {
-        this.mockMvc.perform(get("/"))
-                .andDo(print())
-                .andExpect(content().contentType("application/json"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("{ \"message\": \"Welcome to the Currency Convertor API!\" }"));
-    }
-
     @Test
     void ratesSuccessfullyReturnsConversion() throws Exception {
         MonetaryUnit monetaryUnit = new MonetaryUnit(Currency.getInstance("EUR"), new BigDecimal(100));

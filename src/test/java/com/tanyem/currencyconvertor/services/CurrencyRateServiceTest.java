@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 class CurrencyRateServiceTest {
 
     @Mock
-    private SwopService SwopService;
+    private SwopServiceCurrency SwopService;
 
     @Test
     void convertCurrencySuccessfully() {

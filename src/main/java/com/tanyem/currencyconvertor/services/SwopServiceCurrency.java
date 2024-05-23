@@ -26,9 +26,9 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
-public class SwopService {
+public class SwopServiceCurrency implements CurrencyExchangeService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SwopService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SwopServiceCurrency.class);
 
     private final WebClient webClient;
 
@@ -37,7 +37,7 @@ public class SwopService {
     @Autowired
     private InfluxDBConfig influxDBConfig;
 
-    public SwopService(InfluxDBClient influxDBClient, WebClient.Builder webClientBuilder) {
+    public SwopServiceCurrency(InfluxDBClient influxDBClient, WebClient.Builder webClientBuilder) {
         this.influxDBClient = influxDBClient;
         this.webClient = webClientBuilder.baseUrl("https://swop.cx").build();
     }
