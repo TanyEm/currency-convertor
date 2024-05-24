@@ -87,7 +87,7 @@ public class SwopServiceCurrency implements CurrencyExchangeService {
 
             for (SwopRateDTO rate : rates) {
                 RateModel rateModel = new RateModel(rate.getQuote(), rate.getDate());
-                ratesMap.put((rate.getBase_currency() + rate.getQuote_currency()), rateModel);
+                ratesMap.put((rate.getBaseCurrency() + rate.getQuoteCurrency()), rateModel);
             }
             return ratesMap;
         } catch (WebClientRequestException e) {

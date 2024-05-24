@@ -21,7 +21,7 @@ public class HttpExceptionHandler {
         Map<String, List<String>> errorsMap = new HashMap<>();
 
         ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = toSnakeCase(((FieldError) error).getField());
             String errorMessage = error.getDefaultMessage();
             if (!errorsMap.containsKey(fieldName)) {
                 errorsMap.put(fieldName, new ArrayList<>());
@@ -41,5 +41,9 @@ public class HttpExceptionHandler {
         return new ResponseEntity<>(errorsResponse,
                 headers,
                 HttpStatus.BAD_REQUEST);
+    }
+
+    private String toSnakeCase(String s) {
+        return s.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
     }
 }

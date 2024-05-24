@@ -13,7 +13,7 @@ public class CurrencyVarietyValidator implements ConstraintValidator<CurrencyVar
                 return true;
             }
 
-            if (value.getSource_currency().equals(value.getTarget_currency())) {
+            if (value.getSourceCurrency().equals(value.getTargetCurrency())) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(context.getDefaultConstraintMessageTemplate())
                         .addPropertyNode("source_currency")

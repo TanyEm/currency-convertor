@@ -1,6 +1,7 @@
 package com.tanyem.currencyconvertor.controllers;
 
 import com.influxdb.client.InfluxDBClient;
+import com.tanyem.currencyconvertor.configs.HttpExceptionHandler;
 import com.tanyem.currencyconvertor.dtos.RateRequestDTO;
 import com.tanyem.currencyconvertor.dtos.RateResponseDTO;
 import com.tanyem.currencyconvertor.exceptions.CurrencyPairNotSupportedException;
@@ -14,7 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
@@ -32,6 +36,8 @@ public class CurrencyConvertorController {
 
     private final CurrencyRateService currencyRateService;
 
+    @Autowired
+    private LocalValidatorFactoryBean validator;
 
     @Autowired
     public CurrencyConvertorController(CurrencyRateService currencyRateService, InfluxDBClient influxDBClient) {
@@ -40,8 +46,26 @@ public class CurrencyConvertorController {
     }
 
     @GetMapping(path = "/rates", produces = "application/json")
-    public ResponseEntity<?> rates(HttpServletRequest request, @Valid RateRequestDTO rateRequestDTO) {
-        return convertCurrencyAndPrepareResponse(request, rateRequestDTO);
+    public ResponseEntity<?> rates(HttpServletRequest request,
+                                   @RequestParam("source_currency") String sourceCurrency,
+                                   @RequestParam("target_currency") String targetCurrency,
+                                   @RequestParam("monetary_value") String monetaryValue) {
+        RateRequestDTO rateRequestDTO = RateRequestDTO.builder()
+                .sourceCurrency(sourceCurrency)
+                .targetCurrency(targetCurrency)
+                .monetaryValue(monetaryValue)
+                .build();
+
+        BindingResult bindingResult = new BeanPropertyBindingResult(rateRequestDTO, "rateRequestDTO");
+        validator.validate(rateRequestDTO, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            MethodArgumentNotValidException ex = new MethodArgumentNotValidException(null, bindingResult);
+            HttpExceptionHandler exceptionHandler = new HttpExceptionHandler();
+            return exceptionHandler.handleValidationErrors(ex);
+        } else {
+            return convertCurrencyAndPrepareResponse(request, rateRequestDTO);
+        }
     }
 
     @PostMapping(path = "/convert", produces = "application/json")
@@ -53,16 +77,16 @@ public class CurrencyConvertorController {
         try {
         logger.info(
                 "Convert: {} to {} with value: {}",
-                rateRequestDTO.source_currency,
-                rateRequestDTO.target_currency,
-                rateRequestDTO.monetary_value);
+                rateRequestDTO.getSourceCurrency(),
+                rateRequestDTO.getTargetCurrency(),
+                rateRequestDTO.getMonetaryValue());
 
         MonetaryUnit monetaryUnit = new MonetaryUnit(
-                Currency.getInstance(rateRequestDTO.source_currency),
-                new BigDecimal(rateRequestDTO.monetary_value)
+                Currency.getInstance(rateRequestDTO.getSourceCurrency()),
+                new BigDecimal(rateRequestDTO.getMonetaryValue())
         );
 
-        Currency targetCurrency = Currency.getInstance(rateRequestDTO.target_currency);
+        Currency targetCurrency = Currency.getInstance(rateRequestDTO.getTargetCurrency());
         MonetaryUnit targetMonetaryUnit;
 
             targetMonetaryUnit = currencyRateService.convert(monetaryUnit, targetCurrency);
