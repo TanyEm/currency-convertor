@@ -32,7 +32,7 @@ It includes the following main components:
 
 ## Requirements
 - Java 17
-- Apache Maven 3.9.6
+- ~~Apache Maven 3.9.6~~ Gradle
 - Docker
 - SWOP-API key
 - InfluxDB token
@@ -110,14 +110,12 @@ Here's how the app can be run in the local environment:
 1. If you want to run the app with metrics start the InfluxDB and Grafana containers
 2. Run the application:
 ```bash
-$ mvn spring-boot:run \
-    -Dspring-boot.run.jvmArguments="\
-    -Dapi.key='your_api_key' \
-    -Dinfluxdb.token='your_influxdb_token' \
-    -Dinfluxdb.bucket='myBucket' \
-    -Dinfluxdb.org='currencyConvertor' \
-    -Dinfluxdb.url='http://localhost:8086?timeout=5000&logLevel=BASIC' \
-    -DskipTests
+$ ./gradlew bootRun \
+    -Papi.key="your_api_key" \
+    -Pinfluxdb.token="your_influxdb_token" \
+    -Pinfluxdb.bucket="myBucket" \
+    -Pinfluxdb.org="currencyConvertor" \
+    -Pinfluxdb.url="http://localhost:8086?timeout=5000&logLevel=BASIC"
 ```
 In the above command, your_api_key and your_influxdb_token should be replaced with the actual API key and InfluxDB token.
 3. Go to http://localhost:8080 and check the application.
@@ -125,12 +123,6 @@ In the above command, your_api_key and your_influxdb_token should be replaced wi
 ### Running tests
 To run the tests, execute the following command:
 ```bash
-mvn test \
--DargLine="\
--Dapi.key='your_api_key' \
--Dinfluxdb.token='your_influxdb_token' \
--Dinfluxdb.bucket='myBucket' \
--Dinfluxdb.org='currencyConvertor' \
--Dinfluxdb.url='http://localhost:8086?timeout=5000&logLevel=BASIC'"
+$ /gradlew test --tests "com.tanyem.currencyconvertor.*"
 ```
-It is not necessary to provide 'your_api_key' and 'your_influxdb_token' in the above command.
+You can see test summary in the build folder of the project `/currency-convertor/build/reports/tests/test/index.html`
