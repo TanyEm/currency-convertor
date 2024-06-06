@@ -126,3 +126,4 @@ To run the tests, execute the following command:
 $ /gradlew test --tests "com.tanyem.currencyconvertor.*"
 ```
 You can see test summary in the build folder of the project `/currency-convertor/build/reports/tests/test/index.html`
+![Test Summary](pics/Test_summary.png)
