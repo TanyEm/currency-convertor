@@ -56,8 +56,8 @@ tasks.withType<Test> {
 	systemProperties = mapOf(
 		"api.key" to (project.findProperty("api.key") ?: "EXAMPLE_API_KEY"),
 		"influxdb.token" to (project.findProperty("influxdb.token") ?: "EXAMPLE_INFLUXDB_TOKEN"),
-		"influxdb.bucket" to (project.findProperty("influxdb.bucket") ?: "myBucket"),
-		"influxdb.org" to (project.findProperty("influxdb.org") ?: "currencyConvertor"),
+		"influxdb.bucket" to (project.findProperty("influxdb.bucket") ?: "EXAMPLE_BUCKET"),
+		"influxdb.org" to (project.findProperty("influxdb.org") ?: "EXAMPLE_ORG"),
 		"influxdb.url" to (project.findProperty("influxdb.url") ?: "http://localhost:8086?timeout=5000&logLevel=BASIC"),
 	)
 }

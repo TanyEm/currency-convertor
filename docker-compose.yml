@@ -1,0 +1,29 @@
+services:
+  currency-convertor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_URL=${INFLUXDB_URL}
+      - API_KEY=${API_KEY}
+    depends_on:
+      - influxdb
+
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - 8086:8086
+
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana-provisioning:/etc/grafana/provisioning
+    depends_on:
+      - influxdb

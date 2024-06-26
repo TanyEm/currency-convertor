@@ -6,8 +6,10 @@ This is a simple currency converter that converts one currency to another. It us
 - [Requirements](#requirements)
 - [Grafana and InfluxDB](#grafana-and-influxdb)
   - [How to run](#how-to-run)
+  - [How to run without Docker Compose](#how-to-run-without-docker-compose)
   - [Running the application in Docker](#running-the-application-in-docker)
   - [Running the application in a local environment without Docker](#running-the-application-in-a-local-environment-without-docker)
+  - [Running with Docker Compose](#running-with-docker-compose)
   - [Running tests](#running-tests)
 ## Project structure
 The project is divided into three main parts:
@@ -46,6 +48,57 @@ Grafana shows a simple dashboard with a few metrics collected from the app. The 
 ![Grafana](pics/Grafana.png)
 
 ### How to run
+
+1. Create .env file
+```bash
+API_KEY="EXAMPLE_API_KEY"
+INFLUXDB_TOKEN="EXAMPLE_INFLUXDB_TOKEN"
+INFLUXDB_BUCKET="myBucket"
+INFLUXDB_ORG="currencyConvertor"
+INFLUXDB_URL="http://influxdb:8086?timeout=5000&logLevel=BASIC"
+
+```
+In the file, EXAMPLE_API_KEY and EXAMPLE_INFLUXDB_TOKEN should be replaced with the actual API key and InfluxDB token. The file should be created in the directory where docker-compose.yml file is located `/currency-convertor`
+2. Run Docker Compose
+```bash
+$ docker-compose up
+```
+The command should be run on the same directory where docker-compose.yml file is located `/currency-convertor`
+
+3. Go to http://localhost:8086 and setup InfluxDB. The default values for the setup are:
+- Bucket: myBucket
+- Organization: currencyConvertor
+- Remember to store your API token as an environment variable and include the INFLUXDB_TOKEN in your .env file.
+
+4. Update the influxdb datasource file in the Grafana container. The file is located in the dashboards folder `currency-convertor/grafana-provisioning/datasources/influxdb.yml`. The file should be updated with the InfluxDB token, bucket, organisation and auth credentials. The file should look like this:
+```yaml
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    basicAuth: true
+    basicAuthUser: username
+    secureJsonData:
+      basicAuthPassword: password
+      token: your_influxdb_token
+    jsonData:
+      version: Flux
+      organization: currencyConvertor
+      defaultBucket: myBucket
+      tlsSkipVerify: true
+    isDefault: true
+```
+Replace your_influxdb_token with the actual InfluxDB token. The username and password should be replaced with the actual InfluxDB username and password.
+
+4. Go to http://localhost:3000/connections/datasources and check InfluxDB uid. It should be updated in the JSON file. The JSON file is located in the dashboards folder `currency-convertor/grafana-provisioning/dashboards/grafana.json`.
+
+5. Rerun Docker Compose to apply the changes
+
+If you want to run the app without Docker Compose, you can run the app in docker network following the steps below.
+
+### How to run without Docker Compose
 
 1. Start the InfluxDB and Grafana containers:
 ```bash
@@ -107,7 +160,7 @@ $ docker network connect influxGrafana currency-convertor
 
 ### Running the application in a local environment without Docker
 Here's how the app can be run in the local environment:
-1. If you want to run the app with metrics start the InfluxDB and Grafana containers
+1. If you want to run the app with metrics start the InfluxDB and Grafana containers as described in the section [How to run without Docker Compose](#how-to-run-without-docker-compose).
 2. Run the application:
 ```bash
 $ ./gradlew bootRun \
