@@ -92,7 +92,8 @@ datasources:
 ```
 Replace your_influxdb_token with the actual InfluxDB token. The username and password should be replaced with the actual InfluxDB username and password.
 
-4. Go to http://localhost:3000/connections/datasources and check InfluxDB uid. It should be updated in the JSON file. The JSON file is located in the dashboards folder `currency-convertor/grafana-provisioning/dashboards/grafana.json`.
+4. Go to http://localhost:3000/connections/datasources and check InfluxDB uid. The `uid` should be updated in the JSON file. The JSON file is located in the dashboards folder `currency-convertor/grafana-provisioning/dashboards/grafana.json`.
+![InfluxDB datasource](pics/GrafanaDatasource.png)
 
 5. Rerun Docker Compose to apply the changes
 
@@ -176,7 +177,22 @@ In the above command, your_api_key and your_influxdb_token should be replaced wi
 ### Running tests
 To run the tests, execute the following command:
 ```bash
-$ /gradlew test --tests "com.tanyem.currencyconvertor.*"
+$ ./gradlew test --tests "com.tanyem.currencyconvertor.*"
 ```
 You can see test summary in the build folder of the project `/currency-convertor/build/reports/tests/test/index.html`
 ![Test Summary](pics/Test_summary.png)
+
+### Support and update
+To update dependencies, run the following command:
+```bash
+$ ./gradlew dependencyUpdates
+```
+To check for unused and undeclared dependencies, run the following command:
+```bash
+$ ./gradlew buildHealth
+```
+To check for code coverage, run the following command:
+```bash
+$ ./gradlew test jacocoTestReport
+```
+You can see the code coverage in the build folder of the project `/currency-convertor/build/reports/jacoco/test/html/index.html`
