@@ -61,20 +61,34 @@ public class SwopServiceCurrency implements CurrencyExchangeService {
     }
 
     Map<String, RateModel> getRates() {
-        WriteApiBlocking writeApi = null;
+        Map<String, RateModel> ratesMap;
+        getInfluxDBWriteApi();
         try {
-            this.influxDBClient = InfluxDBClientFactory.create(influxDBConfig.getUrl(), influxDBConfig.getToken().toCharArray(), influxDBConfig.getOrg(), influxDBConfig.getBucket());
+            ratesMap = fetchRatesFromSwopAPI();
+            logSwopApiCallToInfluxDB(true);
+        } catch (SwopAPINotAvailableException e) {
+            logSwopApiCallToInfluxDB(false);
+            throw e;
+        }
+
+        return ratesMap;
+    }
+
+    private void initializeInfluxDBClient() {
+        try {
+            this.influxDBClient = InfluxDBClientFactory.create(
+                    influxDBConfig.getUrl(),
+                    influxDBConfig.getToken().toCharArray(),
+                    influxDBConfig.getOrg(),
+                    influxDBConfig.getBucket()
+            );
         } catch (Exception e) {
             logger.error("InfluxDB is not available: {}", e.getMessage());
             this.influxDBClient = null;
         }
+    }
 
-        try {
-            writeApi = influxDBClient.getWriteApiBlocking();
-        } catch (Exception e) {
-            logger.error("InfluxDB is not available or unauthorized: {}", e.getMessage());
-        }
-
+    private Map<String, RateModel> fetchRatesFromSwopAPI() {
         try {
             logger.info("Fetching rates from Swop API");
             Flux<SwopRateDTO> responseFlux = webClient.get()
@@ -83,40 +97,44 @@ public class SwopServiceCurrency implements CurrencyExchangeService {
                     .bodyToFlux(SwopRateDTO.class);
 
             List<SwopRateDTO> rates = responseFlux.collectList().block();
-            Map<String, RateModel> ratesMap = new HashMap<String, RateModel>();
-
+            Map<String, RateModel> ratesMap = new HashMap<>();
             for (SwopRateDTO rate : rates) {
                 RateModel rateModel = new RateModel(rate.getQuote(), rate.getDate());
-                ratesMap.put((rate.getBaseCurrency() + rate.getQuoteCurrency()), rateModel);
+                ratesMap.put(rate.getBaseCurrency() + rate.getQuoteCurrency(), rateModel);
             }
             return ratesMap;
         } catch (WebClientRequestException e) {
             logger.error("Swop API can not be reached: {}", e.getMessage());
             throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
         } catch (WebClientResponseException e) {
-            if (e.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
-                logger.error("Swap API returned 401 Unauthorized. Check your API key.");
-            } else {
-                logger.error("Swop API call returned an error: {}", e.getMessage());
-            }
+            logger.error("Swop API call returned an error: {}", e.getMessage());
             throw new SwopAPINotAvailableException("Swop API is not available. Please try again later.");
-        } finally {
-            if (writeApi != null){
-                try {
-                    Point point = Point.measurement("swop_api_call")
-                            .addField("success", true)
-                            .time(Instant.now(), WritePrecision.MS);
-                    writeApi.writePoint(point);
+        }
 
-                } catch (WebClientRequestException | WebClientResponseException e) {
-                    Point point = Point.measurement("swop_api_call")
-                            .addField("success", false)
-                            .time(Instant.now(), WritePrecision.MS);
-                    writeApi.writePoint(point);
-                } catch (Exception e) {
-                    logger.error("Failed to write point to InfluxDB: {}", e.getMessage());
-                }
-            }
+    }
+
+    private Optional<WriteApiBlocking> getInfluxDBWriteApi() {
+        initializeInfluxDBClient();
+        if (this.influxDBClient == null) {
+            logger.error("InfluxDBClient is not initialized.");
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(this.influxDBClient.getWriteApiBlocking());
+        } catch (Exception e) {
+            logger.error("Failed to create WriteApiBlocking: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private void logSwopApiCallToInfluxDB(boolean success) {
+        try {
+            Point point = Point.measurement("swop_api_call")
+                    .addField("success", success)
+                    .time(Instant.now(), WritePrecision.MS);
+            this.influxDBClient.getWriteApiBlocking().writePoint(point);
+        } catch (Exception e) {
+            logger.error("Failed to write point to InfluxDB: {}", e.getMessage());
         }
     }
 }
