@@ -2,7 +2,6 @@ package com.tanyem.currencyconvertor.services;
 
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
-import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.tanyem.currencyconvertor.configs.InfluxDBConfig;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
@@ -100,7 +98,7 @@ public class SwopServiceCurrency implements CurrencyExchangeService {
             Map<String, RateModel> ratesMap = new HashMap<>();
             for (SwopRateDTO rate : rates) {
                 RateModel rateModel = new RateModel(rate.getQuote(), rate.getDate());
-                ratesMap.put(rate.getBaseCurrency() + rate.getQuoteCurrency(), rateModel);
+                ratesMap.put((rate.getBaseCurrency() + rate.getQuoteCurrency()), rateModel);
             }
             return ratesMap;
         } catch (WebClientRequestException e) {
@@ -113,17 +111,16 @@ public class SwopServiceCurrency implements CurrencyExchangeService {
 
     }
 
-    private Optional<WriteApiBlocking> getInfluxDBWriteApi() {
+    private void getInfluxDBWriteApi() {
         initializeInfluxDBClient();
         if (this.influxDBClient == null) {
             logger.error("InfluxDBClient is not initialized.");
-            return Optional.empty();
+            return;
         }
         try {
-            return Optional.of(this.influxDBClient.getWriteApiBlocking());
+            this.influxDBClient.getWriteApiBlocking();
         } catch (Exception e) {
             logger.error("Failed to create WriteApiBlocking: {}", e.getMessage());
-            return Optional.empty();
         }
     }
 
